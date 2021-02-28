@@ -12,6 +12,9 @@ def main():
     img = Image.open(img_path)
     img_array = np.array(img)
     height,width,_ = img_array.shape
+    
+    # this is super inneficient but the images are small so it doesn't really matter. 
+    # if we move on to larger test images in the future I might revise this
     with open(out_path,"w") as out_file:
         for y in range(height):
             for x in range(width):
