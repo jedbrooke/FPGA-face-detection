@@ -4,3 +4,5 @@ images/*/*.txt
 images/*.txt
 *.verilator_build
 centroid_tb
+num_bit
+tmds_tb
