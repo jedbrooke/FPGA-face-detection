@@ -2,3 +2,4 @@
 .DS_Store
 images/*/*.txt
 images/*.txt
+*.pyc
