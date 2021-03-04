@@ -6,3 +6,4 @@ images/*.txt
 centroid_tb
 num_bit
 tmds_tb
+__pycache__
