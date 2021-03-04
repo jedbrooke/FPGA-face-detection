@@ -1,3 +1,4 @@
+`timescale 1ns/100ps
 module centroid #(
     parameter DATA_WIDTH = 8,
     parameter INTERNAL_WIDTH = 32
@@ -8,7 +9,7 @@ module centroid #(
     input data_enable, data_end;
 
     output reg [DATA_WIDTH-1:0] centroid_x, centroid_y;
-    output done;
+    output reg done;
 
     input clk;
 
