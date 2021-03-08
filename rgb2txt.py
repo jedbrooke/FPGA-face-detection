@@ -18,7 +18,7 @@ def main():
     with open(out_path,"w") as out_file:
         for y in range(height):
             for x in range(width):
-                out_file.write(f"{','.join([str(v) for v in img_array[y,x]])}\n")
+                out_file.write(f"{','.join([str(v) for v in img_array[y,x]])},")
 
 
 

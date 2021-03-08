@@ -1,4 +1,3 @@
-`timescale 1ns/100ps
 module centroid #(
     parameter DATA_WIDTH = 8,
     parameter INTERNAL_WIDTH = 32
@@ -29,6 +28,10 @@ module centroid #(
             if (data_enable) begin
                 done <= 1'b0;
                 state <= RECV_DATA;
+					 sum_x <= 0;
+					 sum_y <= 0;
+					 centroid_x <= 0;
+					 centroid_y <= 0;
                 counter <= 0;
             end
         end else if (state == RECV_DATA) begin
@@ -45,6 +48,7 @@ module centroid #(
             // or perhaps something that would take more than one cycle
             centroid_x <= sum_x / counter;
             centroid_y <= sum_y / counter;
+				
             done <= 1'b1;
             state <= WAIT_DATA;
         end

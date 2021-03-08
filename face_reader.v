@@ -3,18 +3,19 @@
 /* 
 */
 module face_reader #(
-    parameter WIDTH = 410,
-    parameter DEPTH = 361,
+    parameter WIDTH = 256,
+    parameter DEPTH = 256,
     parameter FILTER_SIZE = 5,
     parameter COLOR_DEPTH = 8
 ) (
-	image_input, enable, enable_process, clk,
-    image_output, finish
+	image_in_R, image_in_G, image_in_B, enable, enable_process, clk,
+    image_output, centroid_x, centroid_y, centroid_done, finish
 );
-    input [COLOR_DEPTH-1:0] image_input;
+    input [COLOR_DEPTH-1:0] image_in_R, image_in_G, image_in_B;
     input enable, enable_process, clk;
 
-    output reg [(COLOR_DEPTH-1):0] image_output;
+	 reg [COLOR_DEPTH-1:0] image [0:(WIDTH * DEPTH) - 1];
+    output reg [COLOR_DEPTH-1:0] image_output; // single bit (black or white)
     output reg finish = 1'b0;
 
     reg [8:0] posx, posy;
@@ -27,19 +28,25 @@ module face_reader #(
 
     reg [3:0] state = WAIT_FOR_IMAGE;
 
-
-    reg [COLOR_DEPTH-1:0] image [(WIDTH * DEPTH) - 1: 0];
-	 
-	 reg [(COLOR_DEPTH-1)*4:0] product;
-
     reg end_of_image;
-
-
-    reg [31:0] counter;
 	 
-    integer win_x, win_y;
-	 reg [31:0] win_val;
-
+	 reg isWhite;
+	 output centroid_done;
+	 output [7:0] centroid_x, centroid_y;
+	 centroid find_face(posx, posy, isWhite, finish, centroid_x, centroid_y, centroid_done, clk);
+	 
+	 
+	 /*
+	 Y = (R+2G+B)/4
+	U = R - G
+	V = B - G 
+	 */
+	 //wire [COLOR_DEPTH:0] Y_sum;
+	 wire [COLOR_DEPTH-1:0] Y, U, V;
+	 //assign Y_sum = image_in_R + {image_in_G[COLOR_DEPTH-1], (image_in_G << 1)}, + image_in_B; // left shift with keeping the MSB to perform *2
+	 assign U = image_in_R < image_in_G ? 0 : image_in_R - image_in_G; // check for underflow
+	 //assign isWhite = U > 26 && U < 74;
+	 //assign V = image_in_B - image_in-G; // check for underflow
 
     always @(posedge clk) begin
         if(state == WAIT_FOR_IMAGE) begin
@@ -51,32 +58,23 @@ module face_reader #(
             end
         end else if (state == RECIEVE_IMAGE) begin
             if(end_of_image) begin
-                state <= WAIT_FOR_PROCESS;
-            end else begin
-                image[(posy * WIDTH) + posx] <= image_input;
-            end
-        end else if (state == WAIT_FOR_PROCESS) begin
-            if(enable_process) begin
-                $display("starting processing");
-                state <= PROCESS;
-                posx <= 9'b0;
-                posy <= 9'b0;
-                end_of_image <= 1'b0;
-            end
-            $display("waiting for enable process signal");
-        end else if (state == PROCESS) begin
-            if(end_of_image) begin
-                $display("processing finished, sending data");
-                state <= SEND_DATA;
+					$display("sending");
                 posx <= 9'b0;
                 posy <= 9'b0;
                 finish <= 1'b1;
                 end_of_image <= 1'b0;
+					 isWhite <= 1'b0;
+                state <= SEND_DATA;
             end else begin
-					// Mask the image
-					if (image[(posy * WIDTH) + posx] > 100 && image[(posy * WIDTH) + posx] < 200)
-						; // check for HUE to be in a certain range
-				end
+                if (U > 26 && U < 74) begin
+						image[(posy*WIDTH)+posx] <= 255;
+						isWhite <= 1'b1;
+					 end else begin
+						image[(posy*WIDTH)+posx] <= 0;
+						isWhite <= 1'b0;
+					end
+					//image[(posy*WIDTH)+posx] <= U;
+            end
         end else if (state == SEND_DATA) begin
             if(end_of_image) begin
                 $display("finished sending");
