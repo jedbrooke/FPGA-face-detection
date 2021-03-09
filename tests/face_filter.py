@@ -25,15 +25,18 @@ def main(img_path):
     mask = np.array([[isSkin(u[y,x],v[y,x]) for x in range(IMG_SIZE)] for y in range(IMG_SIZE)])
     mask = np.array([[smoothWindow(mask[y-(WINDOW_SIZE // 2):y+(WINDOW_SIZE//2)+1,x-(WINDOW_SIZE // 2):x+(WINDOW_SIZE//2)+1]) for x in range(IMG_SIZE - (2*WINDOW_SIZE))] for y in range(IMG_SIZE - (2*WINDOW_SIZE))])
 
-    new_size = mask.shape[0]
-    centroid_x,centroid_y = centroid_from_numpy(mask.reshape((new_size,new_size,1)))
-    print(centroid_x,centroid_y)
+    h,w = mask.shape
+    centroids = centroid_from_numpy(mask.reshape((h,w,1)))
+    if type(centroids) == type(()):
+        centroids = [centroids]
+    for centroid_x,centroid_y in centroids:
+        print(centroid_x,centroid_y)
 
     mask = mask.astype(np.uint8) * 255
     mask_rgb = np.dstack((mask,mask,mask))
-    mask_rgb[centroid_y-(WINDOW_SIZE//4):centroid_y+(WINDOW_SIZE//4)+1,centroid_x-(WINDOW_SIZE//4):centroid_x+(WINDOW_SIZE//4)+1] = [255,0,0]
+    for centroid_x,centroid_y in centroids:
+        mask_rgb[centroid_y-(WINDOW_SIZE//4):centroid_y+(WINDOW_SIZE//4)+1,centroid_x-(WINDOW_SIZE//4):centroid_x+(WINDOW_SIZE//4)+1] = [255,0,0]
     Image.fromarray(mask_rgb).save("test.png",mode="RGB")
-
 
 if __name__ == '__main__':
     main(sys.argv[1])
