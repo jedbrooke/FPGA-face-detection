@@ -3,3 +3,6 @@
 images/*/*.txt
 images/*.txt
 opencv_test
+*.verilator_build
+centroid_tb
+*.pyc
