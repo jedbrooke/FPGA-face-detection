@@ -17,7 +17,7 @@ centroids:
 	done
 
 opencv_test: opencv_test.cpp
-	$(CXX) $(CVFLAGS) -o opencv_test opencv_test.cpp 
+	$(CXX) -o opencv_test opencv_test.cpp $(CVFLAGS)
 
 face_video_tb: face_video_tb.cpp face_reader.v centroid.v
 	$(VERILATOR) $(VFLAGS) --Mdir face_video_tb.$(BUILD_DIR_SIFFIX) -o face_video_tb face_video_tb.cpp face_reader.v centroid.v -CFLAGS "$(CVFLAGS)"
