@@ -58,7 +58,7 @@ module face_reader #(
             end
         end else if (state == RECIEVE_IMAGE) begin
             if(end_of_image) begin
-					$display("sending");
+					//$display("sending");
                 posx <= 9'b0;
                 posy <= 9'b0;
                 finish <= 1'b1;
@@ -77,7 +77,7 @@ module face_reader #(
             end
         end else if (state == SEND_DATA) begin
             if(end_of_image) begin
-                $display("finished sending");
+                //$display("finished sending");
                 state <= WAIT_FOR_IMAGE;
                 finish <= 1'b0;
             end else begin
