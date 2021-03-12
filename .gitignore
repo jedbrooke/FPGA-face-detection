@@ -6,3 +6,4 @@ opencv_test
 *.verilator_build
 centroid_tb
 *.pyc
+face_video_tb

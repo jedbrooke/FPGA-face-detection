@@ -100,8 +100,21 @@ int main(int argc, char const *argv[])
         std::cout << "centroid: " << (int) uut->centroid_x << "," << (int) uut->centroid_y << std::endl;
 
         p = frame_out.begin<cv::Vec3b>();
-        p += ((uut->centroid_y * frame.cols) + uut->centroid_x);
-        p[0][0] = 255;
+        for(int x = -4; x < 5; x++){
+            for(int y = -4; y < 5; y++) {
+                auto idx = uut->centroid_x + x;
+                if (idx < 0) idx = 0;
+                else if (idx >= frame.cols) idx = frame.cols - 1;
+
+                auto idy = uut->centroid_y + y;
+                if(idy < 0) idy = 0;
+                else if (idy >= frame.rows) idy = frame.rows - 1;
+                (p + ((idy * frame.cols) + idx))[0][0] = 255;
+                (p + ((idy * frame.cols) + idx))[0][1] = 0;
+                (p + ((idy * frame.cols) + idx))[0][2] = 0;
+            }
+        }
+       
 
         cv::imshow("input",frame);
         cv::imshow("Mask",frame_out);
