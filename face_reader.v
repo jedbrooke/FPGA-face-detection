@@ -9,14 +9,15 @@ module face_reader #(
     parameter COLOR_DEPTH = 8
 ) (
 	image_in_R, image_in_G, image_in_B, enable, enable_process, clk,
-    image_output, centroid_x, centroid_y, centroid_done, finish
+    image_output, centroid_x, centroid_y, done, finish
 );
     input [COLOR_DEPTH-1:0] image_in_R, image_in_G, image_in_B;
     input enable, enable_process, clk;
 
 	 reg [COLOR_DEPTH-1:0] image [0:(WIDTH * DEPTH) - 1];
     output reg [COLOR_DEPTH-1:0] image_output; // single bit (black or white)
-    output reg finish = 1'b0;
+    output wire finish;
+	 reg mask_finished = 1'b0;
 
     reg [8:0] posx, posy;
 
@@ -25,16 +26,21 @@ module face_reader #(
     parameter WAIT_FOR_PROCESS = 4'd2;
     parameter PROCESS = 4'd3;
     parameter SEND_DATA = 4'd4;
+	 parameter WAIT_FOR_CENTROID = 4'd5;
 
     reg [3:0] state = WAIT_FOR_IMAGE;
 
     reg end_of_image;
 	 
 	 reg isWhite;
-	 output centroid_done;
+	 output reg done;
+	 wire centroid_done;
 	 output [7:0] centroid_x, centroid_y;
-	 centroid find_face(posx, posy, isWhite, finish, centroid_x, centroid_y, centroid_done, clk);
+	 //centroid find_face(posx, posy, isWhite, finish, centroid_x, centroid_y, centroid_done, clk);
 	 
+	 reg smooth_enable;
+	 wire smoothed_output;
+	 low_pass smooth_face(isWhite, smooth_enable, mask_finished, clk, centroid_x, centroid_y, centroid_done, finish, smoothed_output); // when this module finished, start processing
 	 
 	 /*
 	 Y = (R+2G+B)/4
@@ -55,16 +61,18 @@ module face_reader #(
                 posx <= 9'b0;
                 posy <= 9'b0;
                 end_of_image <= 1'b0;
+					 smooth_enable <= 1'b1;
             end
         end else if (state == RECIEVE_IMAGE) begin
             if(end_of_image) begin
-					//$display("sending");
-                posx <= 9'b0;
-                posy <= 9'b0;
-                finish <= 1'b1;
-                end_of_image <= 1'b0;
-					 isWhite <= 1'b0;
-                state <= SEND_DATA;
+					$display("sending");
+               posx <= 9'b0;
+               posy <= 9'b0;
+               mask_finished <= 1'b1;
+               end_of_image <= 1'b0;
+					isWhite <= 1'b0;
+               state <= WAIT_FOR_CENTROID;
+					smooth_enable <= 1'b0;
             end else begin
                 if (U > 26 && U < 74) begin
 						image[(posy*WIDTH)+posx] <= 255;
@@ -75,13 +83,28 @@ module face_reader #(
 					end
 					//image[(posy*WIDTH)+posx] <= U;
             end
+		  end else if (state == WAIT_FOR_CENTROID) begin
+				if (finish) begin
+					$display("starting to output\n");
+					posx <= 9'b0;
+               posy <= 9'b0;
+               end_of_image <= 1'b0;
+					isWhite <= 1'b0;
+               state <= SEND_DATA;
+					done <= 1'b1;
+            end
         end else if (state == SEND_DATA) begin
-            if(end_of_image) begin
-                //$display("finished sending");
+				if(end_of_image) begin
+                //$display("reader finished sending");
                 state <= WAIT_FOR_IMAGE;
-                finish <= 1'b0;
+                mask_finished <= 1'b0;
             end else begin
-                image_output <= image[(posy * WIDTH) + posx];
+                //image_output <= image[(posy * WIDTH) + posx];
+					 if(smoothed_output) begin
+						image_output <= 8'd255;
+					 end else begin
+						image_output <= 8'd0;
+					 end
             end
         end
     end

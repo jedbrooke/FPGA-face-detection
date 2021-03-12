@@ -99,13 +99,12 @@ module readImage (
                 enable_process <= 1'b1;
             end
         end else if (output_ready) begin
-            if(~finish) begin
-                $fclose(out_file);
-                $finish;
-            end else begin
+            if(finish) begin
                 $fwrite(out_file,"%d,",image_output);
-            end
-
+            end else if (~finish) begin
+					$fclose(out_file);
+					$finish;
+				end
         end else begin
             output_ready <= finish;
         end
