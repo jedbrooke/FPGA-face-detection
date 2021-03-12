@@ -98,6 +98,7 @@ module face_reader #(
                 //$display("reader finished sending");
                 state <= WAIT_FOR_IMAGE;
                 mask_finished <= 1'b0;
+					 smooth_enable <= 1'b0;
             end else begin
                 //image_output <= image[(posy * WIDTH) + posx];
 					 if(smoothed_output) begin
