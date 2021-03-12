@@ -77,16 +77,23 @@ int main(int argc, char const *argv[])
         }
         if(DEBUG) std::cout << "finished sending pixel data" << std::endl;
         // begin processing
+        uut->enable = false;
         uut->enable_process = true;
         advance_clock_cycle(&main_time,uut);
 
         if(DEBUG) std::cout << "waiting for processing" << std::endl;
         // wait for processing to end
-        while(!uut->finish) {
+        while(!uut->done) {
             advance_clock_cycle(&main_time,uut);
         }
+        uut->enable_process = false;
 
         if(DEBUG) std::cout << "processing done, recieving image" << std::endl;
+        
+        std::cout << "centroid: " << (int) uut->centroid_x << "," << (int) uut->centroid_y << std::endl;
+        int centroid_x,centroid_y;
+        centroid_x = uut->centroid_x;
+        centroid_y = uut->centroid_y;
 
         // image is done, recieve result
         cv::Mat frame_out(frame.rows, frame.cols, CV_8UC3, cv::Scalar(0,0,0));
@@ -97,16 +104,14 @@ int main(int argc, char const *argv[])
             advance_clock_cycle(&main_time,uut);
         }
 
-        std::cout << "centroid: " << (int) uut->centroid_x << "," << (int) uut->centroid_y << std::endl;
-
         p = frame_out.begin<cv::Vec3b>();
         for(int x = -4; x < 5; x++){
             for(int y = -4; y < 5; y++) {
-                auto idx = uut->centroid_x + x;
+                auto idx = centroid_x + x;
                 if (idx < 0) idx = 0;
                 else if (idx >= frame.cols) idx = frame.cols - 1;
 
-                auto idy = uut->centroid_y + y;
+                auto idy = centroid_y + y;
                 if(idy < 0) idy = 0;
                 else if (idy >= frame.rows) idy = frame.rows - 1;
                 (p + ((idy * frame.cols) + idx))[0][0] = 255;
