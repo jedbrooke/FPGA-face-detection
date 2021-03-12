@@ -21,8 +21,8 @@ centroids:
 opencv_test: opencv_test.cpp
 	$(CXX) -o opencv_test opencv_test.cpp $(CVCFLAGS) $(CVLIBS)
 
-face_video_tb: face_video_tb.cpp face_reader.v centroid.v
-	$(VERILATOR) $(VFLAGS) --threads 1 --Mdir face_video_tb.$(BUILD_DIR_SIFFIX) -o face_video_tb face_video_tb.cpp face_reader.v centroid.v -CFLAGS "$(CVCFLAGS)" -LDFLAGS "$(CVLIBS)"
+face_video_tb: face_video_tb.cpp face_reader.v centroid.v low_pass.v
+	$(VERILATOR) $(VFLAGS) --threads 1 --Mdir face_video_tb.$(BUILD_DIR_SIFFIX) -o face_video_tb face_video_tb.cpp face_reader.v centroid.v low_pass.v -CFLAGS "$(CVCFLAGS)" -LDFLAGS "$(CVLIBS)"
 	cp face_video_tb.$(BUILD_DIR_SIFFIX)/face_video_tb face_video_tb
 
 centroid_tb: centroid_tb.cpp centroid.v read_img.cpp
