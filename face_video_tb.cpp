@@ -37,10 +37,13 @@ int main(int argc, char const *argv[])
 {
     cv::VideoCapture cap;
 
+    bool webcam = false;
+
     if(argc > 1) {
         cap.open(argv[1]);
     } else {
         // 0 will open the webcam
+        webcam = true;
         cap.open(0);
     }
 
@@ -65,6 +68,24 @@ int main(int argc, char const *argv[])
         // cv::Mat frame = cv::imread("images/face.png");
         cv::Mat frame;
         cap >> frame;
+        
+        if(frame.rows != IMG_HEIGHT || frame.cols != IMG_WIDTH) {
+            // crop frame to a square
+            // with w,h = min of current w,h
+            bool crop_height_or_width = frame.rows > frame.cols; //if height is bigger we crop height, else crop width
+            if(crop_height_or_width) { //crop height
+                cv::Mat crop(frame,cv::Rect(0,(frame.rows - frame.cols) / 2,frame.cols,frame.cols));
+                crop.copyTo(frame);
+            } else { //crop width
+                cv::Mat crop(frame,cv::Rect((frame.cols - frame.rows) / 2,0,frame.rows,frame.rows));
+                crop.copyTo(frame);
+            }
+            cv::resize(frame,frame,cv::Size(),IMG_SIZE / (double)frame.rows, IMG_SIZE / (double)frame.rows, cv::INTER_NEAREST);
+        }
+        // cv::imshow("crop",frame);
+        // cv::waitKey(10);
+        // continue;
+
         uut->enable = true;
         // for pixel in frame
         auto p = frame.begin<cv::Vec3b>();
@@ -97,7 +118,7 @@ int main(int argc, char const *argv[])
             advance_clock_cycle(&main_time,uut);
         }
 
-        std::cout << "centroid: " << (int) uut->centroid_x << "," << (int) uut->centroid_y << std::endl;
+        std::cout << "centroid: " << (int) uut->centroid_x << "," << (int) uut->centroid_y << '\r';
 
         p = frame_out.begin<cv::Vec3b>();
         for(int x = -4; x < 5; x++){
@@ -125,6 +146,7 @@ int main(int argc, char const *argv[])
             cv::waitKey(10);
         }
         frame.release();
+
         // end_of_video = true;
     }
 
