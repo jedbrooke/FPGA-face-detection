@@ -99,6 +99,10 @@ int main(int argc, char const *argv[])
 
         std::cout << "centroid: " << (int) uut->centroid_x << "," << (int) uut->centroid_y << std::endl;
 
+        p = frame_out.begin<cv::Vec3b>();
+        p += ((uut->centroid_y * frame.cols) + uut->centroid_x);
+        p[0][0] = 255;
+
         cv::imshow("input",frame);
         cv::imshow("Mask",frame_out);
         if(first_frame) {
