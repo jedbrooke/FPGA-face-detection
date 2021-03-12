@@ -16,7 +16,8 @@ module face_reader #(
 
 	 reg [COLOR_DEPTH-1:0] image [0:(WIDTH * DEPTH) - 1];
     output reg [COLOR_DEPTH-1:0] image_output; // single bit (black or white)
-    output reg finish = 1'b0;
+    output wire finish;
+	 reg mask_finished = 1'b0;
 
     reg [8:0] posx, posy;
 
@@ -39,7 +40,7 @@ module face_reader #(
 	 
 	 reg smooth_enable;
 	 wire smoothed_output;
-	 low_pass smooth_face(isWhite, smooth_enable, finish, clk, centroid_x, centroid_y, centroid_done, smoothed_output); // when this module finished, start processing
+	 low_pass smooth_face(isWhite, smooth_enable, mask_finished, clk, centroid_x, centroid_y, centroid_done, finish, smoothed_output); // when this module finished, start processing
 	 
 	 /*
 	 Y = (R+2G+B)/4
@@ -67,7 +68,7 @@ module face_reader #(
 					$display("sending");
                posx <= 9'b0;
                posy <= 9'b0;
-               finish <= 1'b1;
+               mask_finished <= 1'b1;
                end_of_image <= 1'b0;
 					isWhite <= 1'b0;
                state <= WAIT_FOR_CENTROID;
@@ -83,20 +84,20 @@ module face_reader #(
 					//image[(posy*WIDTH)+posx] <= U;
             end
 		  end else if (state == WAIT_FOR_CENTROID) begin
-				if (centroid_done) begin
+				if (finish) begin
 					$display("starting to output\n");
 					posx <= 9'b0;
-                posy <= 9'b0;
-                end_of_image <= 1'b0;
-					 isWhite <= 1'b0;
-                state <= SEND_DATA;
-					 done <= 1'b1;
-            end 
+               posy <= 9'b0;
+               end_of_image <= 1'b0;
+					isWhite <= 1'b0;
+               state <= SEND_DATA;
+					done <= 1'b1;
+            end
         end else if (state == SEND_DATA) begin
 				if(end_of_image) begin
                 //$display("reader finished sending");
-                //state <= WAIT_FOR_IMAGE;
-                finish <= 1'b0;
+                state <= WAIT_FOR_IMAGE;
+                mask_finished <= 1'b0;
             end else begin
                 //image_output <= image[(posy * WIDTH) + posx];
 					 if(smoothed_output) begin

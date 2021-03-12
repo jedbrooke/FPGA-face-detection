@@ -7,12 +7,12 @@ module low_pass #(
     parameter COLOR_DEPTH = 8
 ) (
 	image_input, enable, enable_process, clk,
-    centroid_x, centroid_y, done, image_output
+    centroid_x, centroid_y, done, finish, image_output
 );
     input image_input;
     input enable, enable_process, clk;
 
-    reg finish = 1'b0;
+    output reg finish = 1'b0;
 	 
 	 reg isWhite;
 	 output [COLOR_DEPTH-1:0] centroid_x, centroid_y;
@@ -134,8 +134,8 @@ module low_pass #(
         end else if (state == SEND_DATA) begin
             if(end_of_image) begin
                 //$display("finished sending");
-                //state <= WAIT_FOR_IMAGE;
-                //finish <= 1'b0;
+                state <= WAIT_FOR_IMAGE;
+                finish <= 1'b0;
             end else begin
                 image_output <= output_image[(posy * WIDTH) + posx];
             end

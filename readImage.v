@@ -99,9 +99,7 @@ module readImage (
                 enable_process <= 1'b1;
             end
         end else if (output_ready) begin
-            if(finish && centroid_ready) begin
-					if (image_output === 1'bX)
-						$display("rip\n");
+            if(finish) begin
                 $fwrite(out_file,"%d,",image_output);
             end else if (~finish) begin
 					$fclose(out_file);
