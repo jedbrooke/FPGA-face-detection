@@ -61,51 +61,51 @@ module face_reader #(
                 posx <= 9'b0;
                 posy <= 9'b0;
                 end_of_image <= 1'b0;
-					 smooth_enable <= 1'b1;
+				smooth_enable <= 1'b1;
             end
         end else if (state == RECIEVE_IMAGE) begin
             if(end_of_image) begin
-					$display("sending");
-               posx <= 9'b0;
-               posy <= 9'b0;
-               mask_finished <= 1'b1;
-               end_of_image <= 1'b0;
-					isWhite <= 1'b0;
-               state <= WAIT_FOR_CENTROID;
-					smooth_enable <= 1'b0;
+				$display("sending");
+                posx <= 9'b0;
+                posy <= 9'b0;
+                mask_finished <= 1'b1;
+                end_of_image <= 1'b0;
+				isWhite <= 1'b0;
+                state <= WAIT_FOR_CENTROID;
+				smooth_enable <= 1'b0;
             end else begin
                 if (U > 26 && U < 74) begin
-						image[(posy*WIDTH)+posx] <= 255;
-						isWhite <= 1'b1;
-					 end else begin
+					    image[(posy*WIDTH)+posx] <= 255;
+					    isWhite <= 1'b1;
+					end else begin
 						image[(posy*WIDTH)+posx] <= 0;
 						isWhite <= 1'b0;
 					end
 					//image[(posy*WIDTH)+posx] <= U;
             end
-		  end else if (state == WAIT_FOR_CENTROID) begin
-				if (finish) begin
-					$display("starting to output\n");
-					posx <= 9'b0;
-               posy <= 9'b0;
-               end_of_image <= 1'b0;
-					isWhite <= 1'b0;
-               state <= SEND_DATA;
-					done <= 1'b1;
+		end else if (state == WAIT_FOR_CENTROID) begin
+			if (finish) begin
+				$display("starting to output\n");
+				posx <= 9'b0;
+                posy <= 9'b0;
+                end_of_image <= 1'b0;
+				isWhite <= 1'b0;
+                state <= SEND_DATA;
+				done <= 1'b1;
             end
         end else if (state == SEND_DATA) begin
-				if(end_of_image) begin
+			if(end_of_image) begin
                 //$display("reader finished sending");
                 state <= WAIT_FOR_IMAGE;
                 mask_finished <= 1'b0;
-					 smooth_enable <= 1'b0;
+				smooth_enable <= 1'b0;
             end else begin
                 //image_output <= image[(posy * WIDTH) + posx];
-					 if(smoothed_output) begin
-						image_output <= 8'd255;
-					 end else begin
-						image_output <= 8'd0;
-					 end
+                if(smoothed_output) begin
+                    image_output <= 8'd255;
+                end else begin
+                    image_output <= 8'd0;
+                end
             end
         end
     end
